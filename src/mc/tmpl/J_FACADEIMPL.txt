@@ -1,0 +1,101 @@
+package ${CLASS_PATH}.facade.impl;
+
+import java.util.Hashtable;
+import java.util.Map;
+
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
+import ${CLASS_PATH}.facade.${SUBMODEL_NAME_JAVA_FU}Facade;
+import ${CLASS_PATH}.entity.${TABLE_NAME_JAVA_FU}VO;
+import cn.property.common.tools.Constants;
+import cn.property.common.tools.SpringContextUtil;
+import cn.property.common.tools.ValueUtil;
+
+@Component(value="${MODEL_NAME_JAVA_FL}Service")
+public class ${SUBMODEL_NAME_JAVA_FU}FacadeImpl implements ${SUBMODEL_NAME_JAVA_FU}Facade{
+	
+	@Transactional(rollbackFor=Exception.class)
+	public void list(Hashtable<String,Object> ht) throws Exception {
+		SpringContextUtil.invoke("${MODEL_NAME_JAVA_FL}Service","list",ht);
+		if (ht.get("dataMap")!=null) {
+			ht.put(Constants.RSCode,Constants.RSC_Y);
+			ht.put(Constants.RSDesc,ht.get("dataMap"));
+		}
+	}
+	
+	@Transactional(rollbackFor=Exception.class)
+	public void load(Hashtable<String,Object> ht) throws Exception {
+		Map pMap=(Map)ht.get("pMap");
+		if (ValueUtil.isEmpty(pMap.get("ID"))) {
+			ht.put(Constants.RSReason,"参数为空");
+			throw new Exception();
+		}
+		
+		SpringContextUtil.invoke("${MODEL_NAME_JAVA_FL}Service","load",ht);
+		
+		if (ht.get("recordMap")!=null) {
+			ht.put(Constants.RSCode,Constants.RSC_Y);
+			ht.put(Constants.RSDesc,ht.get("recordMap"));
+		} else {
+			ht.put(Constants.RSReason,"${TABLE_COMMENT}不存在或者当前登录帐号无法修改");
+			throw new Exception();
+		}
+	}
+	
+	@Transactional(rollbackFor=Exception.class)
+	public void add(Hashtable<String,Object> ht) throws Exception {
+		Map pMap=(Map)ht.get("pMap");
+		
+		SpringContextUtil.invoke("${MODEL_NAME_JAVA_FL}Service","add",ht);
+	}
+	
+	@Transactional(rollbackFor=Exception.class)
+	public void edit(Hashtable<String,Object> ht) throws Exception {
+		Map pMap=(Map)ht.get("pMap");
+		
+		<MCLOOP TYPE=PRIMARYKEY APPENDSPLIT=\n>if (ValueUtil.isEmpty(pMap.get("${COLUMN_NAME_UP}"))) {
+			ht.put(Constants.RSReason,"参数为空");
+			throw new Exception();
+		}
+		pMap.put("ID",pMap.get("${COLUMN_NAME_UP}"));</MCLOOP>
+		
+		SpringContextUtil.invoke("${MODEL_NAME_JAVA_FL}Service","load",ht);
+		
+		if (ht.get("recordMap")==null) {
+			ht.put(Constants.RSReason,"${TABLE_COMMENT}不存在或者当前登录帐号无法修改");
+			throw new Exception();
+		}
+		
+		SpringContextUtil.invoke("${MODEL_NAME_JAVA_FL}Service","edit",ht);
+	}
+	
+	@Transactional(rollbackFor=Exception.class)
+	public void del(Hashtable<String,Object> ht) throws Exception {
+		Map pMap=(Map)ht.get("pMap");
+		if (ValueUtil.isEmpty(pMap.get("ids"))) {
+			ht.put(Constants.RSReason,"参数为空");
+			throw new Exception();
+		}
+		
+		for (String id:ValueUtil.s(pMap.get("ids")).split(",")) {
+			pMap.put("ID",id);
+			
+			SpringContextUtil.invoke("${MODEL_NAME_JAVA_FL}Service","load",ht);
+			
+			if (ht.get("recordMap")==null) {
+				ht.put(Constants.RSReason,"${TABLE_COMMENT}不存在或者当前登录帐号无法删除");
+				throw new Exception();
+			}
+			
+			SpringContextUtil.invoke("${MODEL_NAME_JAVA_FL}Service","del",ht);
+			
+			if (!ValueUtil.equals(ht.get(Constants.RSCode),Constants.RSC_Y)) {
+				ht.put(Constants.RSReason,"${TABLE_COMMENT}不存在或者当前登录帐号无法删除");
+				throw new Exception();
+			}
+		}
+		
+		ht.put(Constants.RSDesc,"删除${TABLE_COMMENT}");
+	}
+}

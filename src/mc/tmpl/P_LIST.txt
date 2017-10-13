@@ -1,0 +1,216 @@
+<%@ page language="java" import="java.util.*" pageEncoding="UTF-8"%>
+<%@ include file="/property/common/jsp/include-base.jsp"%>
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="content-type" content="text/html;charset=utf-8">
+		<meta http-equiv="pragma" content="no-cache" />
+		<title>${title}</title>
+		<%@ include file="/property/common/jsp/include-styles.jsp"%>
+		<%@ include file="/property/common/jsp/include-js.jsp"%>
+		
+		<style type="text/css">
+			*html{
+				background-image:url(about:blank);
+				background-attachment:fixed;
+			}
+		</style>
+		
+		<script type="text/javascript" >
+			var vConditions=[
+				<MCLOOP TYPE=NOPRIMARYKEY APPENDSPLIT=,\n\t\t\t\t>{"NAME":"${COLUMN_NAME_UP}","TITLE":"${COLUMN_COMMENT}","TYPE":"INPUT","CLS":"shortInput"}</MCLOOP>
+			];
+			
+			var vColumns=[[  
+				{align:'center',checkbox:true},
+				<MCLOOP TYPE=NOPRIMARYKEY APPENDSPLIT=,\n\t\t\t\t><MCCASE>
+					<MI TYPE=TIMESTAMP>{title:"${COLUMN_COMMENT}",field:"${COLUMN_NAME_UP}",align:'center',width:125,sortable:true}</MI>
+					<MI TYPE=ELSE>{title:"${COLUMN_COMMENT}",field:"${COLUMN_NAME_UP}",align:'center',width:80,sortable:true}</MI>
+				</MCCASE></MCLOOP>
+			]];
+		
+			$(document).ready(function () {
+				$('#divDataGrid').datagrid({
+					url:"${ctx}/${SUBPACKAGE_LOW}/${SUBMODEL_NAME_JAVA_FL}/list.do",
+					pagination:true,
+					rownumbers:true,
+					pageSize:10,
+					checkOnSelect:false,
+					selectOnCheck:false,
+					singleSelect:true,
+					columns:vColumns,
+					loader:myLoader
+				});
+				
+				$("#tbConditions").createConditionTable(vConditions,3);
+			});
+			
+			function myLoader(param,sucFunc,errorFunc) {
+				var opts=$(this).datagrid("options");
+				if (!opts.url) {
+					return false;
+				}
+				
+				$.ajax({
+					url:opts.url,
+					type:'POST',
+					data:"ps="+escape(encodeURI(JSON.stringify(serializeArrayToJson($("#queryForm").serializeArray())))),
+					dataType:'json',
+					success:function(data) {
+						if (data&&data.RSCode=='Y') {
+							sucFunc(data.RSDesc);
+						} else {
+							alert(data.RSDesc);
+						}
+					},
+					error:function () {
+						errorFunc.apply(this,arguments);
+					}
+				});
+			}
+			
+			function openEditWin(pActType) {
+				$("#editForm")[0].reset();
+				var vTitle="编辑";
+				if (pActType=='new') {
+					vTitle='新增';
+				} else if (pActType=='edit') {
+					vTitle='编辑';
+					
+					if ($("#divDataGrid").datagrid("getChecked").length!=1) {
+						alert("请选择一条记录");
+						return;
+					}
+					
+					var vIds="";
+					$.each($("#divDataGrid").datagrid("getChecked"),function(i,e) {
+						<MCLOOP TYPE=PRIMARYKEY APPENDSPLIT=\n\t\t>vIds+=(i>0?",":"")+e.${COLUMN_NAME_UP};</MCLOOP>
+					});
+					
+					$.ajax({
+						url:"${ctx}/${SUBPACKAGE_LOW}/${SUBMODEL_NAME_JAVA_FL}/load.do",
+						type:'POST',
+						data:"ps="+escape(encodeURI(JSON.stringify({"ID":vIds}))),
+						dataType:'json',
+						success:function(data) {
+							if (data&&data.RSCode=='Y') {
+								$.each($("#editForm").serializeArray(),function (i,e) {
+									$("#editForm [name='"+e.name+"']").val(data.RSDesc[e.name]);
+								});
+							} else if (data&&data.RSCode=='N') {
+								$.messager.alert('信息',formatResultMessage(data));
+							}
+						}
+					});
+				}
+				$("#actType").val(pActType);
+				$('#editDiv').window('setTitle',vTitle);
+				$('#editDiv').window('open');
+			}
+			
+			function saveEdit() {
+				var vUrl="${ctx}/${SUBPACKAGE_LOW}/${SUBMODEL_NAME_JAVA_FL}/";
+				if ($("#actType").val()=="new") {
+					vUrl+="add.do";
+				} else if ($("#actType").val()=="edit") {
+					vUrl+="edit.do";
+				}
+				
+				$.ajax({
+					url:vUrl,
+					type:'POST',
+					data:"ps="+escape(encodeURI(JSON.stringify(serializeArrayToJson($("#editForm").serializeArray())))),
+					dataType:'json',
+					success:function(data) {
+						$.messager.alert('信息',formatResultMessage(data));
+						if (data&&data.RSCode=='Y') {
+							$('#editDiv').window('close');
+							$('#divDataGrid').datagrid("reload");
+						}
+					}
+				});
+			}
+			
+			function del() {
+				if ($("#divDataGrid").datagrid("getChecked").length<1) {
+					alert("请选择要删除的记录");
+					return;
+				}
+				
+				if (confirm("确认删除吗？")) {
+					var vIds="";
+					$.each($("#divDataGrid").datagrid("getChecked"),function(i,e) {
+						<MCLOOP TYPE=PRIMARYKEY APPENDSPLIT=\n\t\t>vIds+=(i>0?",":"")+e.${COLUMN_NAME_UP};</MCLOOP>
+					});
+					
+					$.ajax({
+						url:"${ctx}/${SUBPACKAGE_LOW}/${SUBMODEL_NAME_JAVA_FL}/del.do",
+						type:'POST',
+						data:"ps="+escape(encodeURI(JSON.stringify({"ids":vIds}))),
+						dataType:'json',
+						success:function(data) {
+							$.messager.alert('信息',formatResultMessage(data));
+							if (data&&data.RSCode=='Y') {
+								$('#editDiv').window('close');
+								$('#divDataGrid').datagrid("reload");
+							}
+						}
+					});
+				}
+			}
+		</script>
+	</head>
+	<body>
+		<div class="topToolLeft">
+			<a onclick="openEditWin('new');" href="javascript:void(0);" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-add'">新增</a>
+			<a onclick="openEditWin('edit');" href="javascript:void(0);" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-edit'">修改</a>
+			<a onclick="del();" href="javascript:void(0);" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-delete'">删除</a>
+		</div>
+		
+		<div class="topToolRight">
+			<a onclick="alert(1);" href="javascript:void(0);" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-application_form_magnify'">高级搜索</a>
+		</div>
+		
+		&nbsp;<!-- 此空格一定要保留，IE下，后面的div用来做参照物，这样后面的div的margin-top才起作用 -->
+		<table cellspacing="0" style="width:100%;" >
+			<tr>
+				<td>
+					<form id="queryForm">
+						<table id="tbConditions" cellspacing="0" style="width:100%;"></table>
+					</form>
+				</td>
+				<td width="80px;">
+					<a onclick="$('#divDataGrid').datagrid('reload');" href="javascript:void(0);" class="easyui-linkbutton" data-options="iconCls:'icon-magnifier'">查询</a>
+				</td>
+			</tr>
+		</table>
+		<div id="divDataGrid"></div>
+		
+		<!-- 新增 -->
+		<div id="editDiv" class="easyui-window" data-options="title:'编辑',closed:true,modal:true,onOpen:function () {centerDiv(this);resizeMask(this);}" icon="icon-help" style="width:700px;height:350px;padding:5px;background: #fafafa;">    
+			<div class="easyui-layout" fit="true">
+				<div region="center" border="false" border="false">
+					<form id="editForm">
+						<table cellspacing="0" style="width:100%;" class="showFormTable" >
+							<tr>
+								<MCLOOP TYPE=NOPRIMARYKEY APPENDSPLIT=\n\t\t\t\t\t\t\t\t><td class="titleTD">${COLUMN_COMMENT}</td>
+								<td>
+									<MCCASE>
+										<MI TYPE=TIMESTAMP><input type="text" class="easyui-datebox shortInput" name="${COLUMN_NAME_UP}" id="${COLUMN_NAME_UP}" /></MI>
+										<MI TYPE=ELSE><input type="text" class="shortInput" name="${COLUMN_NAME_UP}"/></MI>
+									</MCCASE>
+								</td></MCLOOP>
+							</tr>
+						</table>
+					</form>
+				</div>
+				<div region="south" border="false" style="height:30px;">
+					<div style="float:right;">
+						<a class="easyui-linkbutton" icon="icon-save" href="javascript:void(0);" onclick="saveEdit();">保存</a>
+						<a class="easyui-linkbutton" icon="icon-cancel" href="javascript:void(0);" onclick="$('#editDiv').window('close');">取消</a>
+					</div>
+				</div>
+			</div>
+		</div>
+	</body>
+</html>

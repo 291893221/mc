@@ -1,0 +1,10 @@
+package ${CLASS_PATH}.dao;
+
+import java.util.Hashtable;
+
+public interface ${SUBMODEL_NAME_JAVA_FU}DAO {
+	public void list(Hashtable<String, Object> ht) throws Exception;
+	public void load(Hashtable<String, Object> ht) throws Exception;
+	public void add(Hashtable<String, Object> ht) throws Exception;
+	public void edit(Hashtable<String, Object> ht) throws Exception;
+}

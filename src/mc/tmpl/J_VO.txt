@@ -1,0 +1,16 @@
+package ${CLASS_PATH}.entity;
+
+import java.util.Date;
+
+public class ${TABLE_NAME_JAVA_FU}VO {
+
+	<MCLOOP TYPE=COLUMN>private ${COLUMN_TYPE_JAVA} ${COLUMN_NAME_JAVA_FL};				//${COLUMN_COMMENT}
+	</MCLOOP>
+	<MCLOOP TYPE=COLUMN>public ${COLUMN_TYPE_JAVA} ${COLUMN_GETMETHOD}() {
+		return ${COLUMN_NAME_JAVA_FL};
+	}
+	public void ${COLUMN_SETMETHOD}(${COLUMN_TYPE_JAVA} ${COLUMN_NAME_JAVA_FL}) {
+		this.${COLUMN_NAME_JAVA_FL}=${COLUMN_NAME_JAVA_FL};
+	}
+	</MCLOOP>
+}

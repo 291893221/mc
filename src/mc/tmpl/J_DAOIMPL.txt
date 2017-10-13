@@ -1,0 +1,130 @@
+package ${CLASS_PATH}.dao.impl;
+
+import java.util.Arrays;
+import java.util.Date;
+import java.util.Hashtable;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.orm.ibatis.SqlMapClientFactoryBean;
+import org.springframework.stereotype.Component;
+
+import ${CLASS_PATH}.dao.${SUBMODEL_NAME_JAVA_FU}DAO;
+import ${CLASS_PATH}.entity.${TABLE_NAME_JAVA_FU}VO;
+import cn.property.common.tools.CommonDAO;
+import cn.property.common.tools.CommonExample;
+import cn.property.common.tools.Constants;
+import cn.property.common.tools.ValueUtil;
+
+import com.ibatis.sqlmap.client.SqlMapClient;
+
+@Component(value="${MODEL_NAME_JAVA_FL}DAO")
+public class ${SUBMODEL_NAME_JAVA_FU}DAOImpl extends CommonDAO implements ${SUBMODEL_NAME_JAVA_FU}DAO {
+	@Autowired
+	@Qualifier("sqlMapClient")
+	private SqlMapClientFactoryBean sqlMapClient;
+	
+	@Override
+	protected SqlMapClient getSqlMapClient() {
+		return (SqlMapClient)this.sqlMapClient.getObject();
+	}
+	
+	public ${SUBMODEL_NAME_JAVA_FU}DAOImpl() {
+		super.namespace="${TABLE_NAME_UP}";
+	}
+	
+	public void list(Hashtable<String, Object> ht) throws Exception {
+		CommonExample example=new CommonExample();
+		CommonExample.Criteria c=example.createCriteria();
+		
+		example.setOrderByClause("1 desc");
+		
+		Map pMap=(Map)ht.get("pMap");
+		
+		<MCLOOP TYPE=NOPRIMARYKEY APPENDSPLIT=\n\t\t><MCCASE>
+			<MI TYPE=VARCHAR>c.like("${COLUMN_NAME_UP}",CommonExample.V,pMap.get("${COLUMN_NAME_UP}"));</MI>
+			<MI TYPE=CHAR>c.like("${COLUMN_NAME_UP}",CommonExample.V,pMap.get("${COLUMN_NAME_UP}"));</MI>
+			<MI TYPE=TIMESTAMP>c.datebetween("${COLUMN_NAME_UP}",pMap.get("${COLUMN_NAME_UP}_BEFORE"),pMap.get("${COLUMN_NAME_UP}_AFTER"));</MI>
+		</MCCASE></MCLOOP>
+		
+		pMap.put("example",example);
+		
+		Map dataMap=pageListMap("${TABLE_NAME_UP}.list",pMap);
+		if (dataMap!=null) {
+			ht.put("dataMap",dataMap);
+		}
+	}
+	
+	public void load(Hashtable<String, Object> ht) throws Exception {
+		Map pMap=(Map)ht.get("pMap");
+		
+		Map recordMap=(Map)getSqlMapClientTemplate().queryForObject("${TABLE_NAME_UP}.selectMapByPrimaryKey",ValueUtil.sNull(pMap.get("ID")));
+		if (recordMap!=null) {
+			ht.put("recordMap",recordMap);
+		}
+	}
+	
+	public void add(Hashtable<String, Object> ht) throws Exception {
+		Map pMap=(Map)ht.get("pMap");
+		
+		${TABLE_NAME_JAVA_FU}VO vo=new ${TABLE_NAME_JAVA_FU}VO();
+		mapToEntity(pMap,vo);
+		
+		<MCLOOP TYPE=PRIMARYKEY APPENDSPLIT=\n\t\t>if (ValueUtil.isEmpty(vo.${COLUMN_GETMETHOD}())) {
+			vo.${COLUMN_SETMETHOD}(getSeq("seq_${TABLE_NAME_LOW}").toString());
+		}</MCLOOP>
+		
+		getSqlMapClientTemplate().insert("${TABLE_NAME_UP}.insert",vo);
+		
+		ht.put(Constants.RSCode,Constants.RSC_Y);
+		ht.put(Constants.RSDesc,"新增${TABLE_COMMENT}");
+	}
+	
+	public void edit(Hashtable<String, Object> ht) throws Exception {
+		Map pMap=(Map)ht.get("pMap");
+		
+		${TABLE_NAME_JAVA_FU}VO vo=new ${TABLE_NAME_JAVA_FU}VO();
+		mapToEntity(pMap,vo);
+		
+		pMap.put("record",vo);
+		pMap.put("columns",Arrays.asList(<MCLOOP TYPE=NOPRIMARYKEY APPENDSPLIT=,>"${COLUMN_NAME_UP}"</MCLOOP>));
+		
+		getSqlMapClientTemplate().insert("${TABLE_NAME_UP}.updateByPrimaryKeyCustomColumns",pMap);
+		
+		ht.put(Constants.RSCode,Constants.RSC_Y);
+		ht.put(Constants.RSDesc,"修改${TABLE_COMMENT}");
+	}
+	
+	public void del(Hashtable<String, Object> ht) throws Exception {
+		Map pMap=(Map)ht.get("pMap");
+		
+		${TABLE_NAME_JAVA_FU}VO vo=new ${TABLE_NAME_JAVA_FU}VO();
+		
+		<MCLOOP TYPE=PRIMARYKEY APPENDSPLIT=\n>vo.${COLUMN_SETMETHOD}(<MCCASE>
+		<MI TYPE=VARCHAR>ValueUtil.sNull(pMap.get("ID")));</MI>
+		<MI TYPE=CHAR>ValueUtil.sNull(pMap.get("ID")));</MI>
+		<MI TYPE=DECIMAL>ValueUtil.l(pMap.get("ID")));</MI>
+		</MCCASE></MCLOOP>
+		
+		pMap.put("record",vo);
+		
+		getSqlMapClientTemplate().insert("${TABLE_NAME_UP}.updateByPrimaryKeyCustomColumns",pMap);
+		
+		ht.put(Constants.RSCode,Constants.RSC_Y);
+		ht.put(Constants.RSDesc,"修改${TABLE_COMMENT}");
+	}
+	
+	public void mapToEntity(Map map,${TABLE_NAME_JAVA_FU}VO vo) {
+		if (map==null) {
+			return;
+		}
+		<MCLOOP TYPE=COLUMN APPENDSPLIT=\n\t\t>vo.${COLUMN_SETMETHOD}(<MCCASE>
+		<MI TYPE=VARCHAR>ValueUtil.sNull(map.get("${COLUMN_NAME_UP}"))</MI>
+		<MI TYPE=CHAR>ValueUtil.sNull(map.get("${COLUMN_NAME_UP}"))</MI>
+		<MI TYPE=DECIMAL>ValueUtil.lNull(map.get("${COLUMN_NAME_UP}"))</MI>
+		<MI TYPE=DOUBLE>ValueUtil.dNull(map.get("${COLUMN_NAME_UP}"))</MI>
+		<MI TYPE=TIMESTAMP>ValueUtil.dateNull(map.get("${COLUMN_NAME_UP}"))</MI>
+		</MCCASE>);</MCLOOP>
+	}
+}

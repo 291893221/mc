@@ -1,0 +1,72 @@
+一、配置使用说明
+	1、配置：
+		// 表名，日前只支持单表
+		public static String tableName="T_MDL_CAT";
+		// 数据库连接串，用户名，密码
+		public static String connUrl="jdbc:oracle:thin:@localhost:1521:orcl";
+		public static String user="ilm";
+		public static String password="ilm123";
+		
+	2、直接运行MC即可，如果没有oracle驱动，早需将oracle的驱动添加到项目
+
+二、模板文件
+	1、文件命名说明：J_开头为类文件(java),P_开头为页面文件(xhtml),X_开头为配置文件(xml)
+	2、添加模板文件：需修改MC.tmplFileNames(模板文件名),MC.outFileNames(输出文件名),MC.packages(输出相对路径)
+
+三、标签说明
+	1、字段循环标签<MCLOOP></MCLOOP>：
+		属性TYPE，必选，值可为COLUMN(循环所有字段)、PRIMARYKEY(循环Key字段)、NOPRIMARYKEY(循环非Key字段)、CHARDATE(循环日期字段)；
+		属性APPENDSPLIT，可选，每循环一次往后面加上相应内容，最后一次不添加，转义字符\n换行,\t制表符
+	
+	
+	2、<MCCASE>标签：
+		需嵌套<MI>使用，如：
+		<MCCASE>
+			<MI TYPE=TIMESTAMP><h:inputText id="ITEM_${COLUMN_NAME}" value="#{item.${COLUMN_NAME}}" styleClass="standardInput {isDate:true}" /></MI>
+			<MI TYPE=DECIMAL><h:inputText id="ITEM_${COLUMN_NAME}" value="#{item.${COLUMN_NAME}}" styleClass="numberInput" /></MI>
+			<MI TYPE=DOUBLE><h:inputText id="ITEM_${COLUMN_NAME}" value="#{item.${COLUMN_NAME}}" styleClass="numberInput" /></MI>
+			<MI TYPE=ELSE><h:inputText id="ITEM_${COLUMN_NAME}" value="#{item.${COLUMN_NAME}}" styleClass="standardInput" /></MI>
+		</MCCASE>
+	
+
+四、替换字符串说明
+
+	输入表格名：T_BAS_TEACHER
+
+	${CLASS_PATH}			包路径，输出：cn.tisson.train.bas
+			                
+	${TABLE_NAME_JAVA_FU}   表名java表示（首字符大写），输出：TBasTeacher
+	${TABLE_NAME_JAVA_FL}   表名java表示（首字符小写），输出：tBasTeacher
+	${TABLE_NAME_UP}        表名（大写），输出：T_BAS_TEACHER
+	${TABLE_NAME_LOW}       表名（小写），输出：t_bas_teacher
+	${TABLE_COMMENT}        表格注释，输出数据库保存的注释：师资演示
+	                        
+	${MODEL_NAME_UP}        输出：BAS_TEACHER
+	${MODEL_NAME_LOW}       输出：bas_teacher
+	${MODEL_NAME_JAVA_FL}   输出：basTeacher
+	${MODEL_NAME_JAVA_FU}   输出：BasTeacher
+	                        
+	${SUBMODEL_NAME_LOW}    输出：teacher
+	${SUBMODEL_NAME_UP}     输出：TEACHER
+	${SUBMODEL_NAME_JAVA_FU}输出：Teacher
+	${SUBMODEL_NAME_JAVA_FL}输出：teacher
+	
+	${SUBPACKAGE_LOW}     	输出：bas
+	
+	输入字段名：TEACHER_NAME，VARCHAR2(100)，师资名称
+	
+	${COLUMN_NAME_UP}		字段名（大写），输出：TEACHER_NAME
+	${COLUMN_NAME_LOW}		字段名（小写），输出：teacher_name
+	${COLUMN_NAME_JAVA_FL}	字段名java表示（首字符小写），输出：teacherName
+	${COLUMN_NAME_JAVA_FU}	字段名java表示（首字符大写），输出：TeacherName
+	
+	${COLUMN_GETMETHOD}		根据字段名得出get方法，输出：getTeacherName
+	${COLUMN_SETMETHOD}		根据字段名得出set方法，输出：setTeacherName
+	
+	${COLUMN_TYPE_JAVA}		字段类型对应的JAVA类型，如：varchar2 则该值为 String
+	${COLUMN_TYPE_JDBC}		字段类型对应的JDBC类型，如：varchar2 则该值为 varchar 应用于sqlMap.xml
+	
+	${COLUMN_COMMENT}		字段说明，输出：师资名称
+	${COLUMN_LENGTH}		字段说明，输出：100
+	${INDEX}				字段序号，输出：当前列所在循环的序号，以1开头
+

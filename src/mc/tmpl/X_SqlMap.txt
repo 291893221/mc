@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="${TABLE_NAME_UP}">
+
+	<sql id="Base_Column_List">
+		<MCLOOP TYPE=COLUMN APPENDSPLIT=,>${COLUMN_NAME_UP}</MCLOOP>
+	</sql>
+	
+	<insert id="insert" parameterType="java.util.HashMap">
+		insert into ${TABLE_NAME_UP} (<MCLOOP TYPE=COLUMN APPENDSPLIT=,>${COLUMN_NAME_UP}</MCLOOP>)
+		values
+		(	<MCLOOP TYPE=COLUMN APPENDSPLIT=,\n\t\t\t> #{ ${COLUMN_NAME_UP}, jdbcType=${COLUMN_TYPE_JDBC}}</MCLOOP>
+		)
+	</insert>
+		
+	<update id="update" parameterType="java.util.HashMap">
+		update ${TABLE_NAME_UP}
+		<set>
+			<MCLOOP TYPE=COLUMN APPENDSPLIT=\n\t\t\t><if test="${COLUMN_NAME_UP} != null">${COLUMN_NAME_UP} = #{ ${COLUMN_NAME_UP}, jdbcType=${COLUMN_TYPE_JDBC} },</if></MCLOOP>
+		</set>
+		where <MCLOOP TYPE=PRIMARYKEY APPENDSPLIT=and> ${COLUMN_NAME_UP} = #{ ${COLUMN_NAME_UP}, jdbcType=${COLUMN_TYPE_JDBC} } </MCLOOP>
+	</update>
+	
+	<update id="updateById" parameterType="java.util.HashMap">
+		update ${TABLE_NAME_UP}
+		set 
+			<MCLOOP TYPE=COLUMN APPENDSPLIT=,\n\t\t\t>${COLUMN_NAME_UP}= #{ ${COLUMN_NAME_UP}, jdbcType=${COLUMN_TYPE_JDBC} }</MCLOOP>
+		where<MCLOOP TYPE=PRIMARYKEY APPENDSPLIT=and> ${COLUMN_NAME_UP} = #{ ${COLUMN_NAME_UP}, jdbcType=${COLUMN_TYPE_JDBC} } </MCLOOP>
+	</update>
+		
+	<select id="loadNextSeq" parameterType="String" resultType="java.lang.String">
+		select seq_${TABLE_NAME_LOW}.nextval next_seq from dual
+	</select>
+	
+	<select id="loadDbDate" parameterType="String" resultType="java.util.Date">
+		SELECT SYSDATE FROM DUAL
+	</select>
+	<!-- 自定义查询列 -->
+	<sql id="Custom_Column_List">
+		<MCLOOP TYPE=COLUMN APPENDSPLIT=,><MCCASE>
+			<MI TYPE=TIMESTAMP>to_char(${COLUMN_NAME_UP},'yyyy-mm-dd hh24:mi:ss') </MI>
+		</MCCASE>${COLUMN_NAME_UP}</MCLOOP>
+	</sql>
+	
+</mapper>

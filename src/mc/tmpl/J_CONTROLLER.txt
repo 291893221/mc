@@ -1,0 +1,140 @@
+package ${CLASS_PATH}.control;
+
+import java.net.URLDecoder;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Map;
+
+import javax.servlet.http.HttpSession;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.ModelAndView;
+
+import cn.property.common.tools.Constants;
+import cn.property.common.tools.JsonUtil;
+import cn.property.common.tools.MapUtil;
+import cn.property.common.tools.SpringContextUtil;
+
+import com.regaltec.baf.org.user.common.valueobj.UserVO;
+import com.regaltec.baf.org.user.ui.control.UserLoginBean;
+
+@Controller
+@RequestMapping("/${SUBPACKAGE_LOW}/${SUBMODEL_NAME_JAVA_FL}")
+public class ${SUBMODEL_NAME_JAVA_FU}Controller {
+	
+	@RequestMapping("/manager.do")
+	public ModelAndView manager(HttpSession session) {
+		//UserLoginBean userBean=(UserLoginBean)session.getAttribute("userLoginBean");
+		
+		Map<String,Object> modelMap = new HashMap<String,Object>(0);
+	    return new ModelAndView("${SUBPACKAGE_LOW}/${SUBMODEL_NAME_JAVA_FL}/manager",modelMap);
+	}
+	
+	@RequestMapping("/list.do")
+	public ModelAndView list(HttpSession session,@RequestParam String ps) {
+		Map<String,Object> modelMap=MapUtil.newModelMap("【加载${TABLE_COMMENT}列表】");
+		
+		//UserLoginBean userBean=(UserLoginBean)session.getAttribute("userLoginBean");
+		Hashtable<String,Object> ht=new Hashtable<String,Object>();
+		
+		try {
+			Map pMap=JsonUtil.json2bean(URLDecoder.decode(ps,"UTF-8"),Map.class);
+			ht.put("pMap",pMap);
+			SpringContextUtil.invoke("${MODEL_NAME_JAVA_FL}FacadeI","list",ht);
+			
+			MapUtil.setRtn(modelMap,ht);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+	    return new ModelAndView("jsonView",modelMap);
+	}
+	
+	@RequestMapping("/load.do")
+	public ModelAndView load(HttpSession session,@RequestParam String ps) {
+		Map<String,Object> modelMap=MapUtil.newModelMap("【加载${TABLE_COMMENT}】");
+		
+		//UserLoginBean userBean=(UserLoginBean)session.getAttribute("userLoginBean");
+		Hashtable<String,Object> ht=new Hashtable<String,Object>();
+		
+		try {
+			Map pMap=JsonUtil.json2bean(URLDecoder.decode(ps,"UTF-8"),Map.class);
+			ht.put("pMap",pMap);
+			SpringContextUtil.invoke("${MODEL_NAME_JAVA_FL}FacadeI","load",ht);
+			
+			MapUtil.setRtn(modelMap,ht);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		modelMap.put(Constants.RSReason,ht.get(Constants.RSReason));
+	    return new ModelAndView("jsonView",modelMap);
+	}
+	
+	@RequestMapping("/add.do")
+	public ModelAndView add(HttpSession session,@RequestParam String ps) {
+		Map<String,Object> modelMap=MapUtil.newModelMap("【新增${TABLE_COMMENT}】");
+		
+		//UserLoginBean userBean=(UserLoginBean)session.getAttribute("userLoginBean");
+		Hashtable<String,Object> ht=new Hashtable<String,Object>();
+		//ht.put("userid",userBean.getCurrentUser().getUserId());
+		
+		try {
+			Map pMap=JsonUtil.json2bean(URLDecoder.decode(ps,"UTF-8"),Map.class);
+			ht.put("pMap",pMap);
+			SpringContextUtil.invoke("${MODEL_NAME_JAVA_FL}FacadeI","add",ht);
+			
+			MapUtil.setRtn(modelMap,ht);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		modelMap.put(Constants.RSReason,ht.get(Constants.RSReason));
+	    return new ModelAndView("jsonView",modelMap);
+	}
+	
+	@RequestMapping("/edit.do")
+	public ModelAndView edit(HttpSession session,@RequestParam String ps) {
+		Map<String,Object> modelMap=MapUtil.newModelMap("【编辑${TABLE_COMMENT}】");
+		
+		//UserLoginBean userBean=(UserLoginBean)session.getAttribute("userLoginBean");
+		Hashtable<String,Object> ht=new Hashtable<String,Object>();
+		//ht.put("userid",userBean.getCurrentUser().getUserId());
+		
+		try {
+			Map pMap=JsonUtil.json2bean(URLDecoder.decode(ps,"UTF-8"),Map.class);
+			ht.put("pMap",pMap);
+			SpringContextUtil.invoke("${MODEL_NAME_JAVA_FL}FacadeI","edit",ht);
+			
+			MapUtil.setRtn(modelMap,ht);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		modelMap.put(Constants.RSReason,ht.get(Constants.RSReason));
+	    return new ModelAndView("jsonView",modelMap);
+	}
+	
+	@RequestMapping("/del.do")
+	public ModelAndView del(HttpSession session,@RequestParam String ps) {
+		Map<String,Object> modelMap=MapUtil.newModelMap("【删除${TABLE_COMMENT}】");
+		
+		//UserLoginBean userBean=(UserLoginBean)session.getAttribute("userLoginBean");
+		Hashtable<String,Object> ht=new Hashtable<String,Object>();
+		//ht.put("userid",userBean.getCurrentUser().getUserId());
+		
+		try {
+			Map pMap=JsonUtil.json2bean(URLDecoder.decode(ps,"UTF-8"),Map.class);
+			ht.put("pMap",pMap);
+			SpringContextUtil.invoke("${MODEL_NAME_JAVA_FL}FacadeI","del",ht);
+			
+			MapUtil.setRtn(modelMap,ht);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		modelMap.put(Constants.RSReason,ht.get(Constants.RSReason));
+	    return new ModelAndView("jsonView",modelMap);
+	}
+	
+}
+
